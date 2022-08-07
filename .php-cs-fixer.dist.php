@@ -22,9 +22,9 @@ $config
     ->setRules(array(
         '@Symfony' => true,
         'array_syntax' => array('syntax' => 'long'),
-        'line_ending' => false,
     ))
     ->setFinder($finder)
+    ->setLineEnding(PHP_EOL)
 ;
 
 return $config;
