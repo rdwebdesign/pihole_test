@@ -8,31 +8,32 @@
 *  Please see LICENSE file for your rights under this license.
 */
 
-require "scripts/pi-hole/php/password.php";
+require 'scripts/pi-hole/php/password.php';
 if (!$auth) {
     $_SESSION['prev_url'] = $_SERVER['REQUEST_URI'];
-    header("Location: login.php");
+    header('Location: login.php');
     exit;
 }
 
-require "scripts/pi-hole/php/auth.php";
-require_once "scripts/pi-hole/php/FTL.php";
-require_once "scripts/pi-hole/php/func.php";
+require 'scripts/pi-hole/php/auth.php';
+require_once 'scripts/pi-hole/php/FTL.php';
+require_once 'scripts/pi-hole/php/func.php';
 
 // Return memory usage to show on status block
-function getMemUsage() {
-    $data = explode("\n", file_get_contents("/proc/meminfo"));
+function getMemUsage()
+{
+    $data = explode("\n", file_get_contents('/proc/meminfo'));
     $meminfo = array();
     if (count($data) > 0) {
         foreach ($data as $line) {
-            $expl = explode(":", $line);
-            if (count($expl) == 2) {
+            $expl = explode(':', $line);
+            if (2 == count($expl)) {
                 // remove " kB" from the end of the string and make it an integer
-                $meminfo[$expl[0]] = intval(trim(substr($expl[1],0, -3)));
+                $meminfo[$expl[0]] = intval(trim(substr($expl[1], 0, -3)));
             }
         }
-        $memused = $meminfo["MemTotal"] - $meminfo["MemFree"] - $meminfo["Buffers"] - $meminfo["Cached"];
-        $memusage = $memused / $meminfo["MemTotal"];
+        $memused = $meminfo['MemTotal'] - $meminfo['MemFree'] - $meminfo['Buffers'] - $meminfo['Cached'];
+        $memusage = $memused / $meminfo['MemTotal'];
     } else {
         $memusage = -1;
     }
@@ -42,15 +43,16 @@ function getMemUsage() {
 
 // Try to get temperature value from different places (OS dependent)
 // - return an array, containing the temperature and limit.
-function getTemperature() {
+function getTemperature()
+{
     global $setupVars;
 
-    if (file_exists("/sys/class/thermal/thermal_zone0/temp")) {
-        $output = rtrim(file_get_contents("/sys/class/thermal/thermal_zone0/temp"));
-    } elseif (file_exists("/sys/class/hwmon/hwmon0/temp1_input")) {
-        $output = rtrim(file_get_contents("/sys/class/hwmon/hwmon0/temp1_input"));
+    if (file_exists('/sys/class/thermal/thermal_zone0/temp')) {
+        $output = rtrim(file_get_contents('/sys/class/thermal/thermal_zone0/temp'));
+    } elseif (file_exists('/sys/class/hwmon/hwmon0/temp1_input')) {
+        $output = rtrim(file_get_contents('/sys/class/hwmon/hwmon0/temp1_input'));
     } else {
-        $output = "";
+        $output = '';
     }
 
     // Test if we succeeded in getting the temperature
@@ -71,7 +73,6 @@ function getTemperature() {
         } else {
             $limit = 60;
         }
-
     } else {
         // Nothing can be colder than -273.15 degree Celsius (= 0 Kelvin)
         // This is the minimum temperature possible (AKA absolute zero)
@@ -80,7 +81,7 @@ function getTemperature() {
         $limit = null;
     }
 
-    return [$celsius, $limit];
+    return array($celsius, $limit);
 }
 
 check_cors();
@@ -92,7 +93,7 @@ if (empty($_SESSION['token'])) {
 $token = $_SESSION['token'];
 
 // For session timer
-$maxlifetime = ini_get("session.gc_maxlifetime");
+$maxlifetime = ini_get('session.gc_maxlifetime');
 
 // Get temperature
 list($celsius, $temperaturelimit) = getTemperature();
@@ -117,9 +118,9 @@ $memory_usage = getMemUsage();
 
 $piholeFTLConf = piholeFTLConfig();
 
-require "common_header.php";
+require 'common_header.php';
 ?>
-<body class="hold-transition sidebar-mini<?php if($boxedlayout){ ?> layout-boxed<?php } ?><?php if($auth){ ?> logged-in<?php } ?>">
+<body class="hold-transition sidebar-mini<?php if ($boxedlayout) { ?> layout-boxed<?php } ?><?php if ($auth) { ?> logged-in<?php } ?>">
 <noscript>
     <!-- JS Warning -->
     <div>
@@ -131,13 +132,15 @@ require "common_header.php";
     <!-- /JS Warning -->
 </noscript>
 <?php
-if($auth) {
+if ($auth) {
     echo "<div id=\"token\" hidden>$token</div>";
 }
 ?>
 
 <!-- Send token to JS -->
-<div id="enableTimer" hidden><?php if(file_exists("../custom_disable_timer")){ echo file_get_contents("../custom_disable_timer"); } ?></div>
+<div id="enableTimer" hidden><?php if (file_exists('../custom_disable_timer')) {
+    echo file_get_contents('../custom_disable_timer');
+} ?></div>
 <div class="wrapper">
     <header class="main-header">
         <!-- Logo -->
@@ -157,7 +160,7 @@ if($auth) {
             </a>
             <div class="navbar-custom-menu">
                 <ul class="nav navbar-nav">
-                    <li<?php echo !$hostname ? ' class="hidden"' : "" ?>>
+                    <li<?php echo !$hostname ? ' class="hidden"' : ''; ?>>
                         <p class="navbar-text">
                             <span class="hidden-xs hidden-sm">hostname:</span>
                             <code><?php echo $hostname; ?></code>
@@ -190,7 +193,11 @@ if($auth) {
                                         <a class="btn-link" href="https://github.com/pi-hole/pi-hole/releases" rel="noopener" target="_blank">Updates</a>
                                     </div>
                                     <div id="sessiontimer" class="col-xs-12 text-center">
-                                        <strong>Session is valid for <span id="sessiontimercounter"><?php if($auth && strlen($pwhash) > 0){echo $maxlifetime;}else{echo "0";} ?></span></strong>
+                                        <strong>Session is valid for <span id="sessiontimercounter"><?php if ($auth && strlen($pwhash) > 0) {
+                                            echo $maxlifetime;
+                                        } else {
+                                            echo '0';
+                                        } ?></span></strong>
                                     </div>
                                 </div>
                             </li>
@@ -210,7 +217,7 @@ if($auth) {
         </nav>
     </header>
 <?php
-require "scripts/pi-hole/php/sidebar.php";
+                                        require 'scripts/pi-hole/php/sidebar.php';
 ?>
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
